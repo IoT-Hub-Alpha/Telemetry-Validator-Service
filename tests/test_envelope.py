@@ -110,12 +110,14 @@ class TestToUtc:
 
     def test_naive_datetime(self):
         from datetime import datetime
+
         dt = datetime(2026, 1, 15, 12, 0, 0)
         result = to_utc(dt)
         assert result.tzinfo is not None
 
     def test_aware_datetime_converted(self):
         from datetime import datetime, timezone, timedelta
+
         dt = datetime(2026, 1, 15, 14, 0, 0, tzinfo=timezone(timedelta(hours=2)))
         result = to_utc(dt)
         assert result.hour == 12

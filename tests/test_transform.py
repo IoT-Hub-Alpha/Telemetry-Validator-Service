@@ -3,7 +3,10 @@
 import pytest
 
 from validator.services.envelope import RawContractError
-from validator.services.transform import apply_transformations, process_telemetry_payload
+from validator.services.transform import (
+    apply_transformations,
+    process_telemetry_payload,
+)
 
 
 class TestApplyTransformations:

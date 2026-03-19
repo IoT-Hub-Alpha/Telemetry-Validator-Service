@@ -75,6 +75,8 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
       - name: Run tests with coverage gate
+        env:
+          DJANGO_SECRET_KEY: ci-test-secret-key
         run: |
           if [ -d "tests" ]; then
             pytest -q --maxfail=1 \

@@ -55,18 +55,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- Kafka ---
 
-KAFKA_TOPIC_TELEMETRY_RAW = os.getenv(
-    "KAFKA_TOPIC_TELEMETRY_RAW", "telemetry.raw"
-)
+KAFKA_TOPIC_TELEMETRY_RAW = os.getenv("KAFKA_TOPIC_TELEMETRY_RAW", "telemetry.raw")
 KAFKA_TOPIC_TELEMETRY_CLEAN = os.getenv(
     "KAFKA_TOPIC_TELEMETRY_CLEAN", "telemetry.clean"
 )
-KAFKA_TOPIC_TELEMETRY_DLQ = os.getenv(
-    "KAFKA_TOPIC_TELEMETRY_DLQ", "telemetry.dlq"
-)
-KAFKA_CONSUMER_GROUP = os.getenv(
-    "KAFKA_CONSUMER_GROUP", "telemetry-validator"
-)
+KAFKA_TOPIC_TELEMETRY_DLQ = os.getenv("KAFKA_TOPIC_TELEMETRY_DLQ", "telemetry.dlq")
+KAFKA_CONSUMER_GROUP = os.getenv("KAFKA_CONSUMER_GROUP", "telemetry-validator")
 KAFKA_REQUEST_TIMEOUT_MS = int(os.getenv("KAFKA_REQUEST_TIMEOUT_MS", "30000"))
 
 # Consumer tuning

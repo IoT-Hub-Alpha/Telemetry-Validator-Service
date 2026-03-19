@@ -6,11 +6,11 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 from validator.services.pipeline import MessageRouter
-from validator.services.envelope import RawContractError
 
 
-def _make_kafka_message(value_dict=None, key=None, topic="telemetry.raw",
-                        partition=0, offset=0):
+def _make_kafka_message(
+    value_dict=None, key=None, topic="telemetry.raw", partition=0, offset=0
+):
     """Create a mock Kafka message."""
     msg = MagicMock()
     msg.topic.return_value = topic

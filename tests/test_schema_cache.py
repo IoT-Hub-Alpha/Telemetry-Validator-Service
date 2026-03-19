@@ -75,9 +75,7 @@ class TestSchemaCacheGetSchema:
 
     @patch("validator.services.schema_cache.redis.Redis")
     @patch("validator.services.schema_cache.httpx.Client")
-    def test_returns_none_when_not_found(
-        self, mock_http_cls, mock_redis_cls
-    ):
+    def test_returns_none_when_not_found(self, mock_http_cls, mock_redis_cls):
         mock_redis = MagicMock()
         mock_redis_cls.from_url.return_value = mock_redis
         mock_redis.get.return_value = None
@@ -117,9 +115,7 @@ class TestSchemaCacheGetDevice:
 
     @patch("validator.services.schema_cache.redis.Redis")
     @patch("validator.services.schema_cache.httpx.Client")
-    def test_returns_none_for_unknown_device(
-        self, mock_http_cls, mock_redis_cls
-    ):
+    def test_returns_none_for_unknown_device(self, mock_http_cls, mock_redis_cls):
         mock_redis = MagicMock()
         mock_redis_cls.from_url.return_value = mock_redis
         mock_redis.get.return_value = None

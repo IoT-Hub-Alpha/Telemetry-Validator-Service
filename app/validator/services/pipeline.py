@@ -130,7 +130,8 @@ class MessageRouter:
             )
         except IoTProducerException:
             logger.critical(
-                "Failed to produce message to %s", topic,
+                "Failed to produce message to %s",
+                topic,
                 extra={"event_id": value.get("event_id")},
             )
             raise
@@ -158,9 +159,7 @@ class MessageRouter:
             )
 
         # Validate and transform
-        clean_payload = process_telemetry_payload(
-            payload_input, schema, received_ts
-        )
+        clean_payload = process_telemetry_payload(payload_input, schema, received_ts)
 
         # Resolve device
         device = self._cache.get_device(contract["serial_number"])
@@ -181,12 +180,9 @@ class MessageRouter:
             if isinstance(timestamp_val, str):
                 normalized["payload"]["timestamp"] = timestamp_val
             else:
-                normalized["payload"]["timestamp"] = (
-                    to_utc(timestamp_val).isoformat()
-                )
+                normalized["payload"]["timestamp"] = to_utc(timestamp_val).isoformat()
 
         return normalized
-
 
     @staticmethod
     def _decode_message_value(raw_bytes: bytes | None) -> dict[str, Any]:

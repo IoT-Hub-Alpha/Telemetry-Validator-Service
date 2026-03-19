@@ -33,9 +33,7 @@ class SchemaCache:
             self._redis.ping()
             logger.info("Redis connection established for schema cache")
         except redis.ConnectionError:
-            logger.warning(
-                "Redis unavailable — schema cache will use direct HTTP only"
-            )
+            logger.warning("Redis unavailable — schema cache will use direct HTTP only")
             self._redis = None
 
     def get_schema(self, version: str) -> dict | None:

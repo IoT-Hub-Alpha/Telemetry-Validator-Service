@@ -49,6 +49,8 @@ class Command(BaseCommand):
         self._install_signal_handlers()
 
         schema_cache = SchemaCache()
+        schema_cache.warm_cache()
+
         producer = IoTKafkaProducer()
         consumer = IoTKafkaConsumer(
             group_id=settings.KAFKA_CONSUMER_GROUP,

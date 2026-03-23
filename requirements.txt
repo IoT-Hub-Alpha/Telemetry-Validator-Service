@@ -1,0 +1,8 @@
+Django==5.2.10
+confluent-kafka>=2.6.0
+redis>=5.0.0
+httpx>=0.27.0
+jsonschema>=4.23.0
+python-dotenv>=1.2.0
+iot-logging-schemas @ git+https://github.com/IoT-Hub-Alpha/logging-lib.git@dev
+IoTKafka @ git+https://github.com/IoT-Hub-Alpha/kafka-consumer-producer-lib.git@v1.0

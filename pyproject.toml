@@ -1,0 +1,17 @@
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "telemetry_validator.settings"
+pythonpath = ["app"]
+testpaths = ["tests"]
+addopts = "--reuse-db"
+markers = [
+    "smoke: critical smoke tests",
+    "integration: integration tests covering full request flows",
+]
+
+[tool.flake8]
+max-line-length = 88
+exclude = [".git", "__pycache__", "venv"]

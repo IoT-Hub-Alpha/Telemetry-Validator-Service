@@ -201,6 +201,77 @@ class SchemaCache:
 
         return device
 
+    def verify_device_token(self, serial_number: str, token: str) -> dict | None:
+        """
+        Verify device token via Device API.
+
+        Checks memory → Redis → HTTP. Returns device dict if token is valid
+        and device is active, None otherwise.
+        """
+        cache_key = f"device_token:{serial_number}:{token}"
+
+        # Try memory
+        mem_hit = self._mem_get(cache_key)
+        if mem_hit is not None:
+            return mem_hit
+
+        # Try Redis
+        if self._redis is not None:
+            try:
+                cached = self._redis.get(cache_key)
+                if cached is not None:
+                    result = json.loads(cached)
+                    self._mem_set(cache_key, result)
+                    return result
+            except redis.RedisError:
+                logger.warning("Redis read error for device_token %s", serial_number)
+
+        # Fetch from API
+        device = self._fetch_device_token_from_api(serial_number, token)
+        if device is None:
+            return None
+
+        # Store in memory
+        self._mem_set(cache_key, device)
+
+        # Store in Redis
+        if self._redis is not None:
+            try:
+                self._redis.setex(
+                    cache_key,
+                    settings.DEVICE_CACHE_TTL_SECONDS,
+                    json.dumps(device),
+                )
+            except redis.RedisError:
+                logger.warning("Redis write error for device_token %s", serial_number)
+
+        return device
+
+    def _fetch_device_token_from_api(
+        self, serial_number: str, token: str
+    ) -> dict | None:
+        """Verify device token via Device API endpoint."""
+        try:
+            response = self._http.get(
+                "/v1/devices/verify-token/",
+                params={"serial_number": serial_number, "token": token},
+            )
+            if response.status_code == 401:
+                return None
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            data = response.json()
+            if not data.get("is_active", False):
+                return None
+            return data
+        except httpx.HTTPStatusError as e:
+            logger.error("Device token verify HTTP error: %s", e)
+            return None
+        except Exception as e:
+            logger.error("Device token verify request failed: %s", e)
+            return None
+
     def _fetch_schema_from_api(self, version: str) -> dict | None:
         """Fetch TelemetrySchema from Device API by version."""
         try:

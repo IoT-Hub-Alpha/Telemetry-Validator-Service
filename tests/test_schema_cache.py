@@ -132,3 +132,89 @@ class TestSchemaCacheGetDevice:
         result = cache.get_device("SN-UNKNOWN")
 
         assert result is None
+
+
+class TestSchemaCacheVerifyDeviceToken:
+    """Tests for SchemaCache.verify_device_token."""
+
+    @patch("validator.services.schema_cache.redis.Redis")
+    @patch("validator.services.schema_cache.httpx.Client")
+    def test_valid_token_returns_device(
+        self, mock_http_cls, mock_redis_cls, device_data
+    ):
+        mock_redis = MagicMock()
+        mock_redis_cls.from_url.return_value = mock_redis
+        mock_redis.get.return_value = None
+
+        mock_http = MagicMock()
+        mock_http_cls.return_value = mock_http
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = device_data
+        mock_response.raise_for_status.return_value = None
+        mock_http.get.return_value = mock_response
+
+        cache = SchemaCache()
+        result = cache.verify_device_token("SN-001", "valid-token")
+
+        assert result is not None
+        assert result["id"] == "device-uuid-001"
+
+    @patch("validator.services.schema_cache.redis.Redis")
+    @patch("validator.services.schema_cache.httpx.Client")
+    def test_invalid_token_returns_none(self, mock_http_cls, mock_redis_cls):
+        mock_redis = MagicMock()
+        mock_redis_cls.from_url.return_value = mock_redis
+        mock_redis.get.return_value = None
+
+        mock_http = MagicMock()
+        mock_http_cls.return_value = mock_http
+
+        mock_response = MagicMock()
+        mock_response.status_code = 401
+        mock_http.get.return_value = mock_response
+
+        cache = SchemaCache()
+        result = cache.verify_device_token("SN-001", "bad-token")
+
+        assert result is None
+
+    @patch("validator.services.schema_cache.redis.Redis")
+    @patch("validator.services.schema_cache.httpx.Client")
+    def test_inactive_device_returns_none(self, mock_http_cls, mock_redis_cls):
+        mock_redis = MagicMock()
+        mock_redis_cls.from_url.return_value = mock_redis
+        mock_redis.get.return_value = None
+
+        mock_http = MagicMock()
+        mock_http_cls.return_value = mock_http
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "id": "device-uuid-001",
+            "serial_number": "SN-001",
+            "is_active": False,
+        }
+        mock_response.raise_for_status.return_value = None
+        mock_http.get.return_value = mock_response
+
+        cache = SchemaCache()
+        result = cache.verify_device_token("SN-001", "some-token")
+
+        assert result is None
+
+    @patch("validator.services.schema_cache.redis.Redis")
+    @patch("validator.services.schema_cache.httpx.Client")
+    def test_cached_token_from_redis(self, mock_http_cls, mock_redis_cls, device_data):
+        mock_redis = MagicMock()
+        mock_redis_cls.from_url.return_value = mock_redis
+        mock_redis.get.return_value = json.dumps(device_data)
+
+        cache = SchemaCache()
+        result = cache.verify_device_token("SN-001", "cached-token")
+
+        assert result is not None
+        assert result["id"] == "device-uuid-001"
+        mock_redis.get.assert_called_once_with("device_token:SN-001:cached-token")

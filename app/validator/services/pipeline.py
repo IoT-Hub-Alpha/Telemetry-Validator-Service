@@ -23,8 +23,8 @@ class MessageRouter:
     """
     Routes a single Kafka message to telemetry.clean or telemetry.dlq.
 
-    Orchestrates: decode → validate envelope → fetch schema →
-    validate payload → transform → resolve device → route.
+    Orchestrates: decode → validate envelope → verify device token →
+    fetch schema → validate payload → transform → resolve device → route.
     """
 
     def __init__(
@@ -55,6 +55,17 @@ class MessageRouter:
             raw_payload_for_dlq = raw_obj
 
             contract = validate_raw_contract(raw_obj)
+
+            # Verify device token before processing
+            device_token = contract["device_token"]
+            verified_device = self._cache.verify_device_token(
+                contract["serial_number"], device_token
+            )
+            if verified_device is None:
+                raise RawContractError(
+                    "unauthorized_device",
+                    f"Invalid token for device SN: {contract['serial_number']}",
+                )
 
             normalized = self._normalize_payload(contract)
 

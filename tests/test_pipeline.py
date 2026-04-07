@@ -38,6 +38,7 @@ def _make_raw_envelope(**overrides):
         },
         "received_at": "2026-01-15T12:00:00+00:00",
         "ingest_index": 0,
+        "device_token": "valid-token-abc123",
     }
     base.update(overrides)
     return base
@@ -71,6 +72,7 @@ def mock_cache(schema_data, device_data):
     cache = MagicMock()
     cache.get_schema.return_value = schema_data
     cache.get_device.return_value = device_data
+    cache.verify_device_token.return_value = device_data
     return cache
 
 
@@ -213,6 +215,36 @@ class TestMessageRouterDLQ:
         assert call_kwargs["topic"] == "telemetry.dlq"
         published_value = call_kwargs["value"]
         assert "not found" in str(published_value["error"]["detail"])
+
+    def test_invalid_token_to_dlq(self, router, mock_cache, mock_producer):
+        mock_cache.verify_device_token.return_value = None
+        raw = _make_raw_envelope()
+        msg = _make_kafka_message(raw)
+
+        with patch("validator.services.pipeline.settings") as mock_settings:
+            mock_settings.KAFKA_TOPIC_TELEMETRY_CLEAN = "telemetry.clean"
+            mock_settings.KAFKA_TOPIC_TELEMETRY_DLQ = "telemetry.dlq"
+            router.process_message(msg)
+
+        call_kwargs = mock_producer.produce.call_args.kwargs
+        assert call_kwargs["topic"] == "telemetry.dlq"
+        published_value = call_kwargs["value"]
+        assert published_value["error"]["code"] == "unauthorized_device"
+
+    def test_missing_token_field_to_dlq(self, router, mock_producer):
+        raw = _make_raw_envelope()
+        del raw["device_token"]
+        msg = _make_kafka_message(raw)
+
+        with patch("validator.services.pipeline.settings") as mock_settings:
+            mock_settings.KAFKA_TOPIC_TELEMETRY_CLEAN = "telemetry.clean"
+            mock_settings.KAFKA_TOPIC_TELEMETRY_DLQ = "telemetry.dlq"
+            router.process_message(msg)
+
+        call_kwargs = mock_producer.produce.call_args.kwargs
+        assert call_kwargs["topic"] == "telemetry.dlq"
+        published_value = call_kwargs["value"]
+        assert published_value["error"]["code"] == "invalid_contract"
 
     def test_dlq_envelope_has_source_metadata(self, router, mock_producer):
         msg = _make_kafka_message(value_dict=None)

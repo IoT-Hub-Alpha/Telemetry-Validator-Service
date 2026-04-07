@@ -20,6 +20,7 @@ def _make_raw_obj(**overrides):
         "payload": {"schema_version": "1.0", "value": 42},
         "received_at": "2026-01-15T12:00:00+00:00",
         "ingest_index": 0,
+        "device_token": "valid-device-token-abc123",
     }
     base.update(overrides)
     return base
@@ -88,6 +89,19 @@ class TestValidateRawContract:
         result = validate_raw_contract(raw)
         assert "12:00:00" in result["received_at"]
         assert "+00:00" in result["received_at"]
+
+    def test_missing_device_token(self):
+        raw = _make_raw_obj()
+        del raw["device_token"]
+
+        with pytest.raises(RawContractError) as exc_info:
+            validate_raw_contract(raw)
+        assert exc_info.value.code == "invalid_contract"
+
+    def test_device_token_passed_through(self):
+        raw = _make_raw_obj(device_token="my-token-123")
+        result = validate_raw_contract(raw)
+        assert result["device_token"] == "my-token-123"
 
 
 class TestParseDatetimeIso:

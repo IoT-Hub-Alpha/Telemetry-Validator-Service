@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from iot_logging import FastAPIRequestContextMiddleware, StructuredJsonFormatter
+from iot_logging import StructuredJsonFormatter
 import logging
 
 app = FastAPI()

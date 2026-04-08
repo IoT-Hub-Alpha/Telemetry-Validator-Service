@@ -75,7 +75,7 @@ DEVICE_CACHE_TTL_SECONDS = int(os.getenv("DEVICE_CACHE_TTL_SECONDS", "600"))
 
 # --- Device API ---
 
-DEVICE_API_BASE_URL = os.getenv("DEVICE_API_BASE_URL", "http://web:8000/api")
+DEVICE_API_BASE_URL = os.getenv("DEVICE_API_BASE_URL", "http://api-device:8010")
 DEVICE_API_TIMEOUT_SECONDS = float(os.getenv("DEVICE_API_TIMEOUT_SECONDS", "5.0"))
 
 # --- Metrics ---

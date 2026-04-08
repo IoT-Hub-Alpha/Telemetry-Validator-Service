@@ -33,6 +33,10 @@ ENV PATH="$VENV_PATH/bin:$PATH"
 
 COPY --from=builder /app /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN chmod +x /app/scripts/entrypoint.sh \
     && adduser --disabled-password --gecos "" django \
     && chown -R django:django /app

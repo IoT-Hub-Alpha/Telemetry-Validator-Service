@@ -17,7 +17,6 @@ ENVELOPE_SCHEMA = {
         "payload": {"type": "object"},
         "received_at": {"type": "string", "format": "date-time"},
         "ingest_index": {"type": "integer", "minimum": 0},
-        "device_token": {"type": "string", "minLength": 1},
     },
     "required": [
         "request_id",
@@ -26,7 +25,6 @@ ENVELOPE_SCHEMA = {
         "payload",
         "received_at",
         "ingest_index",
-        "device_token",
     ],
 }
 
@@ -100,6 +98,17 @@ def validate_raw_contract(raw_obj: dict[str, Any]) -> dict[str, Any]:
 
     received_at_dt = to_utc(received_at_dt)
 
+    device_token = payload.get("device_token")
+    if (
+        not device_token
+        or not isinstance(device_token, str)
+        or not device_token.strip()
+    ):
+        raise RawContractError(
+            "missing_device_token",
+            "payload must contain non-empty 'device_token'",
+        )
+
     return {
         "request_id": request_id,
         "ingest_protocol": raw_obj["ingest_protocol"],
@@ -107,5 +116,5 @@ def validate_raw_contract(raw_obj: dict[str, Any]) -> dict[str, Any]:
         "payload": payload,
         "received_at": received_at_dt.isoformat(),
         "ingest_index": raw_obj["ingest_index"],
-        "device_token": raw_obj["device_token"],
+        "device_token": device_token,
     }

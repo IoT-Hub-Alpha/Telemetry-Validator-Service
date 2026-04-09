@@ -35,10 +35,10 @@ def _make_raw_envelope(**overrides):
         "payload": {
             "schema_version": "1.0",
             "value": 42,
+            "device_token": "valid-token-abc123",
         },
         "received_at": "2026-01-15T12:00:00+00:00",
         "ingest_index": 0,
-        "device_token": "valid-token-abc123",
     }
     base.update(overrides)
     return base
@@ -175,7 +175,9 @@ class TestMessageRouterDLQ:
         assert published_value["error"]["code"] == "malformed_json"
 
     def test_missing_schema_version_to_dlq(self, router, mock_producer):
-        raw = _make_raw_envelope(payload={"no_version": True})
+        raw = _make_raw_envelope(
+            payload={"no_version": True, "device_token": "valid-token-abc123"}
+        )
         msg = _make_kafka_message(raw)
 
         with patch("validator.services.pipeline.settings") as mock_settings:
@@ -233,7 +235,7 @@ class TestMessageRouterDLQ:
 
     def test_missing_token_field_to_dlq(self, router, mock_producer):
         raw = _make_raw_envelope()
-        del raw["device_token"]
+        del raw["payload"]["device_token"]
         msg = _make_kafka_message(raw)
 
         with patch("validator.services.pipeline.settings") as mock_settings:
@@ -244,7 +246,7 @@ class TestMessageRouterDLQ:
         call_kwargs = mock_producer.produce.call_args.kwargs
         assert call_kwargs["topic"] == "telemetry.dlq"
         published_value = call_kwargs["value"]
-        assert published_value["error"]["code"] == "invalid_contract"
+        assert published_value["error"]["code"] == "missing_device_token"
 
     def test_dlq_envelope_has_source_metadata(self, router, mock_producer):
         msg = _make_kafka_message(value_dict=None)

@@ -99,7 +99,11 @@ def validate_raw_contract(raw_obj: dict[str, Any]) -> dict[str, Any]:
     received_at_dt = to_utc(received_at_dt)
 
     device_token = payload.get("device_token")
-    if not device_token or not isinstance(device_token, str) or not device_token.strip():
+    if (
+        not device_token
+        or not isinstance(device_token, str)
+        or not device_token.strip()
+    ):
         raise RawContractError(
             "missing_device_token",
             "payload must contain non-empty 'device_token'",

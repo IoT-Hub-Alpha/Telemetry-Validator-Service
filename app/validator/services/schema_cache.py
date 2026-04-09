@@ -263,7 +263,9 @@ class SchemaCache:
                 return None
             response.raise_for_status()
             raw = response.json()
-            data = raw.get("data", raw) if isinstance(raw, dict) and "data" in raw else raw
+            data = (
+                raw.get("data", raw) if isinstance(raw, dict) and "data" in raw else raw
+            )
             if not data.get("is_active", False):
                 return None
             return data

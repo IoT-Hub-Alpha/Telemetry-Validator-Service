@@ -98,8 +98,8 @@ def validate_raw_contract(raw_obj: dict[str, Any]) -> dict[str, Any]:
 
     received_at_dt = to_utc(received_at_dt)
 
-    device_token = payload.get('device_token')
-    
+    device_token = payload.get("device_token")
+
     return {
         "request_id": request_id,
         "ingest_protocol": raw_obj["ingest_protocol"],

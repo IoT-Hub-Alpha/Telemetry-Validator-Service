@@ -17,7 +17,11 @@ def _make_raw_obj(**overrides):
         "request_id": str(uuid4()),
         "ingest_protocol": "http",
         "serial_number": "SN-001",
-        "payload": {"schema_version": "1.0", "value": 42, "device_token": "valid-device-token-abc123"},
+        "payload": {
+            "schema_version": "1.0",
+            "value": 42,
+            "device_token": "valid-device-token-abc123",
+        },
         "received_at": "2026-01-15T12:00:00+00:00",
         "ingest_index": 0,
     }
@@ -64,7 +68,11 @@ class TestValidateRawContract:
 
     def test_payload_serial_matches(self):
         raw = _make_raw_obj(
-            payload={"serial_number": "SN-001", "schema_version": "1.0", "device_token": "valid-device-token-abc123"}
+            payload={
+                "serial_number": "SN-001",
+                "schema_version": "1.0",
+                "device_token": "valid-device-token-abc123",
+            }
         )
         result = validate_raw_contract(raw)
         assert result["serial_number"] == "SN-001"
@@ -98,7 +106,13 @@ class TestValidateRawContract:
         assert exc_info.value.code == "missing_device_token"
 
     def test_device_token_passed_through(self):
-        raw = _make_raw_obj(payload={"schema_version": "1.0", "value": 42, "device_token": "my-token-123"})
+        raw = _make_raw_obj(
+            payload={
+                "schema_version": "1.0",
+                "value": 42,
+                "device_token": "my-token-123",
+            }
+        )
         result = validate_raw_contract(raw)
         assert result["device_token"] == "my-token-123"
 

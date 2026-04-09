@@ -28,6 +28,7 @@ class SchemaCache:
         self._http = httpx.Client(
             base_url=settings.DEVICE_API_BASE_URL,
             timeout=settings.DEVICE_API_TIMEOUT_SECONDS,
+            headers={settings.INTERNAL_SERVICE_HEADER: "telemetry-validator"},
         )
         try:
             self._redis = redis.Redis.from_url(
@@ -261,7 +262,8 @@ class SchemaCache:
             if response.status_code == 404:
                 return None
             response.raise_for_status()
-            data = response.json()
+            raw = response.json()
+            data = raw.get("data", raw) if isinstance(raw, dict) and "data" in raw else raw
             if not data.get("is_active", False):
                 return None
             return data
@@ -286,6 +288,8 @@ class SchemaCache:
                 results = data
             elif isinstance(data, dict) and "results" in data:
                 results = data["results"]
+            elif isinstance(data, dict) and "data" in data:
+                results = data["data"]
             else:
                 results = [data]
 
@@ -315,6 +319,8 @@ class SchemaCache:
                 results = data
             elif isinstance(data, dict) and "results" in data:
                 results = data["results"]
+            elif isinstance(data, dict) and "data" in data:
+                results = data["data"]
             else:
                 results = [data]
         except Exception as e:
@@ -336,6 +342,8 @@ class SchemaCache:
                 results = data
             elif isinstance(data, dict) and "results" in data:
                 results = data["results"]
+            elif isinstance(data, dict) and "data" in data:
+                results = data["data"]
             else:
                 results = [data]
 
